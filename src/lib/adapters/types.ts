@@ -1,0 +1,2 @@
+export type NormalisedCapture={type:string;sourcePlatform:string;sourceIdentifier?:string;rawUrl?:string;canonicalUrl?:string;originalText?:string;userNote?:string;rawMetadata:Record<string,unknown>;contentAvailability:'FULL_CONTENT'|'PARTIAL_METADATA'|'URL_ONLY'|'USER_NOTE_ONLY'|'UNAVAILABLE'};
+export interface CaptureAdapter<T>{source:string;validate(input:unknown):Promise<boolean>;normalise(input:T):Promise<NormalisedCapture[]>}

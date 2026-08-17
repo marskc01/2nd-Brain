@@ -1,0 +1,1 @@
+{"fixtures":["plain DM","DM with URL","shared post","shared Reel","duplicate event","unknown sender","malformed event","bad signature"],"note":"instagram-reel.json is the canonical executable fixture; scripts can mutate sender, ID, body, and signature to test negative cases."}

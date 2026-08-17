@@ -1,0 +1,1 @@
+console.log('KDN Brain setup\n1. Copy .env.example to .env.local (existing files are never overwritten).\n2. Create a Supabase project and run migrations.\n3. Run npm run doctor.\n4. Start with npm run dev.');

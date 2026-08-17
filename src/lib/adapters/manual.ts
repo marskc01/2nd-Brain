@@ -1,0 +1,3 @@
+import { canonicaliseUrl } from '../normalise';import type {CaptureAdapter,NormalisedCapture} from './types';
+type Input={type:'url'|'text'|'idea'|'note';content:string;note?:string};
+export class ManualAdapter implements CaptureAdapter<Input>{source='manual';async validate(v:unknown){return !!v&&typeof v==='object'&&'content'in v}async normalise(i:Input):Promise<NormalisedCapture[]>{const isUrl=i.type==='url';return[{type:i.type,sourcePlatform:'manual',rawUrl:isUrl?i.content:undefined,canonicalUrl:isUrl?canonicaliseUrl(i.content):undefined,originalText:isUrl?undefined:i.content,userNote:i.note,rawMetadata:{},contentAvailability:isUrl?'URL_ONLY':'FULL_CONTENT'}]}}

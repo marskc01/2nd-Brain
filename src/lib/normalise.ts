@@ -1,0 +1,3 @@
+export function canonicaliseUrl(raw:string){const url=new URL(raw);url.hash='';['utm_source','utm_medium','utm_campaign','utm_term','utm_content','fbclid','igshid'].forEach(k=>url.searchParams.delete(k));url.hostname=url.hostname.toLowerCase().replace(/^www\./,'');url.pathname=url.pathname.replace(/\/$/,'')||'/';url.searchParams.sort();return url.toString()}
+export function normaliseEntity(name:string){return name.toLowerCase().trim().replace(/^https?:\/\/(www\.)?/,'').replace(/\.ai\/?$/,'').replace(/\s+(ai|inc\.?|ltd\.?)$/,'').replace(/[^a-z0-9]+/g,' ').trim()}
+export function allowedInstagramSender(sender:string){const ids=[process.env.INSTAGRAM_OWNER_IGSID,process.env.INSTAGRAM_OWNER_IG_ID].filter(Boolean);return ids.includes(sender)}

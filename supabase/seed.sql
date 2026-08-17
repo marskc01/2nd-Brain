@@ -1,0 +1,2 @@
+-- Sample data intentionally requires replacing this UUID with the authenticated development owner.
+-- It is not run automatically against production. Records use metadata.demo=true so Delete Demo Data can remove them safely.

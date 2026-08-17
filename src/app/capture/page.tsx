@@ -1,0 +1,1 @@
+import{CaptureForm}from'@/components/CaptureForm';export default function Page(){return <><div className="eyebrow">Capture</div><h1 className="title">Send something to Brain</h1><p className="subtitle">It is saved immediately. Understanding, connections and opportunity analysis happen asynchronously.</p><div className="grid"><div className="span8"><CaptureForm/></div></div></>}

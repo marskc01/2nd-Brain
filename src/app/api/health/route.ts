@@ -1,0 +1,1 @@
+import {NextResponse}from'next/server';export async function GET(){return NextResponse.json({application:'healthy',supabase:!!process.env.NEXT_PUBLIC_SUPABASE_URL,openai:!!process.env.OPENAI_API_KEY,instagram:!!process.env.META_APP_SECRET,mcp:!!process.env.KDN_MCP_TOKEN})}

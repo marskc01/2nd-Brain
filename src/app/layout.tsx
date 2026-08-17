@@ -1,0 +1,3 @@
+import './globals.css';import Link from'next/link';
+const links=[['/','Today'],['/inbox','Inbox'],['/capture','Capture'],['/opportunities','Opportunities'],['/experiments','Experiments'],['/goals','Goals'],['/projects','Projects'],['/ask','Ask Brain'],['/settings/system','System']];
+export default function Layout({children}:{children:React.ReactNode}){return <html lang="en"><body><div className="shell"><aside className="sidebar"><div className="brand">KDN BRAIN</div><nav className="nav">{links.map(([h,l])=><Link href={h} key={h}>{l}</Link>)}</nav></aside><main>{children}</main></div></body></html>}

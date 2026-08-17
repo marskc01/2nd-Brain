@@ -1,0 +1,3 @@
+import { z } from 'zod';
+const schema=z.object({NEXT_PUBLIC_SUPABASE_URL:z.string().url().optional().or(z.literal('')),NEXT_PUBLIC_SUPABASE_ANON_KEY:z.string().optional(),SUPABASE_SERVICE_ROLE_KEY:z.string().optional(),OPENAI_API_KEY:z.string().optional(),OPENAI_REASONING_MODEL:z.string().default('gpt-5.2'),OPENAI_FAST_MODEL:z.string().default('gpt-5-mini'),OPENAI_EMBEDDING_MODEL:z.string().default('text-embedding-3-small'),META_APP_SECRET:z.string().optional(),META_VERIFY_TOKEN:z.string().optional(),INSTAGRAM_OWNER_IGSID:z.string().optional(),INSTAGRAM_OWNER_IG_ID:z.string().optional(),AUTO_RESEARCH_THRESHOLD:z.coerce.number().min(0).max(10).default(7.5)});
+export const env=schema.parse(process.env);

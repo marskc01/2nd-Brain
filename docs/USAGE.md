@@ -25,6 +25,10 @@ Use content you are authorised to upload. Supported files: MP4, MOV, WebM, JPEG 
 
 If a job already holds the capture during upload, wait for that job and use **Finish upload** when offered. Matching output types are updated in place. Do not create a second Quick capture just to add the missing video.
 
+## Continue deeper work in Astra
+
+Open a capture → **Continue in Astra** → describe the result you want → review the brief → **Copy Astra brief**. Paste it into Astra or download the Markdown brief. It includes stored source evidence, timestamps, prior outputs and optional personal context, without another KDN Brain model call. If the Reel has no accessible content, the brief asks for it instead of claiming it was watched. Running the prompt uses the destination conversation’s allowance or API billing. See [Astra handoff and the advanced-agent path](ASTRA_HANDOFF.md).
+
 ## Tell Brain what you want
 
 For manual captures, choose **Quick capture**, add actual source text or a file, then fill **What would you like from this?**. You can use ordinary language or these shortcuts:

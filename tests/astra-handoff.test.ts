@@ -60,11 +60,17 @@ describe("Astra handoff", () => {
         content: "DO_NOT_INCLUDE",
       },
     ];
+    Object.assign(input.artifacts[0], { storage_path: "PRIVATE_STORAGE_PATH", owner_id: "PRIVATE_OWNER_ID" });
+    input.actions = [{ id: "action", capture_id: "capture-1", type: "create_script", intended_result: "Draft", status: "completed" }];
+    Object.assign(input.actions[0], { inputs: { signedUrl: "PRIVATE_SIGNED_URL" }, error: "PRIVATE_ERROR" });
     const text = buildAstraHandoff(input);
     expect(text).toContain("partial visual coverage");
     expect(text).toContain('"atMs": 5000');
     expect(text).toContain("Existing draft");
     expect(text).not.toContain("DO_NOT_INCLUDE");
+    for (const hidden of ["PRIVATE_STORAGE_PATH", "PRIVATE_OWNER_ID", "PRIVATE_SIGNED_URL", "PRIVATE_ERROR"]) {
+      expect(text).not.toContain(hidden);
+    }
   });
   it("exports attached text even when budget failure prevented understanding", () => {
     const input = structuredClone(base);

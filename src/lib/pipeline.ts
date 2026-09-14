@@ -196,7 +196,8 @@ export async function processCapture(job: Job, worker: string) {
     }
     if (
       attachments.some(
-        (a) => !["video", "image", "share", "ig_post"].includes(a.type),
+        (a) =>
+          !["video", "image", "share", "ig_post", "ig_reel"].includes(a.type),
       )
     )
       acquisitionNotes.push(

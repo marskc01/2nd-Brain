@@ -2,14 +2,32 @@ import { normalizedMessageSchema, type NormalizedMessage } from "./domain";
 type RecordValue = Record<string, unknown>;
 export type InstagramAttachment = NormalizedMessage["attachments"][number];
 
+export function isInstagramPermalink(value: string) {
+  try {
+    const url = new URL(value);
+    return (
+      url.protocol === "https:" &&
+      ["instagram.com", "www.instagram.com"].includes(url.hostname) &&
+      /^\/(reel|p|tv)\/[^/]+\/?$/.test(url.pathname)
+    );
+  } catch {
+    return false;
+  }
+}
+
 // Meta's post-share transition payload can contain both share and ig_post
 // for the same media. These are retrieval candidates, not proof of access.
 export function instagramContent(attachments: InstagramAttachment[]) {
   const candidates: { attachment: InstagramAttachment; index: number }[] = [];
   const captions: string[] = [];
+  const permalinks: string[] = [];
   const seen = new Set<string>();
   for (const [index, attachment] of attachments.entries()) {
-    if (!["video", "image", "share", "ig_post"].includes(attachment.type))
+    if (
+      !["video", "image", "share", "ig_post", "ig_reel"].includes(
+        attachment.type,
+      )
+    )
       continue;
     const payload = record(attachment.payload);
     if (
@@ -22,6 +40,13 @@ export function instagramContent(attachments: InstagramAttachment[]) {
         captions.push(caption);
     }
     if (!attachment.url) continue;
+    // Verified owner DM: ig_reel supplied only a public Reel permalink and
+    // reel_video_id. A website URL is not a downloadable video asset.
+    if (isInstagramPermalink(attachment.url)) {
+      if (!permalinks.includes(attachment.url) && permalinks.length < 3)
+        permalinks.push(attachment.url);
+      continue;
+    }
     const key =
       typeof payload.ig_post_media_id === "string"
         ? `post:${payload.ig_post_media_id}`
@@ -30,7 +55,7 @@ export function instagramContent(attachments: InstagramAttachment[]) {
     seen.add(key);
     if (candidates.length < 3) candidates.push({ attachment, index });
   }
-  return { candidates, captions };
+  return { candidates, captions, permalinks };
 }
 function record(value: unknown): RecordValue {
   return value && typeof value === "object" && !Array.isArray(value)

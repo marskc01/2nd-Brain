@@ -12,6 +12,7 @@ type Capture = {
   id: string;
   title: string;
   source_url: string | null;
+  input_data?: { attachments?: { url?: string }[] };
   source_kind: string;
   owner_note: string | null;
   state: string;
@@ -204,7 +205,7 @@ function Badge({ value }: { value: string }) {
     </span>
   );
 }
-function safeLink(value: string | null) {
+function safeLink(value: string | null | undefined) {
   return value && /^https?:\/\//i.test(value) ? value : undefined;
 }
 function formatDate(value: string) {
@@ -908,9 +909,16 @@ export default function Brain() {
               </div>
               <h2>{selectedItem.title}</h2>
               <p>{selectedItem.result_summary}</p>
-              {safeLink(selectedItem.source_url) && (
+              {safeLink(
+                selectedItem.source_url ||
+                  selectedItem.input_data?.attachments?.find((a) => a.url)?.url,
+              ) && (
                 <a
-                  href={safeLink(selectedItem.source_url)}
+                  href={safeLink(
+                    selectedItem.source_url ||
+                      selectedItem.input_data?.attachments?.find((a) => a.url)
+                        ?.url,
+                  )}
                   target="_blank"
                   rel="noreferrer"
                 >

@@ -241,6 +241,41 @@ describe("vertical slice with simulated AI and real media/database", () => {
     );
     expect(output.rows[0].content).toContain("A caption-only reference");
   });
+  it("marks a live-shaped Reel permalink as needing content without calling media analysis", async () => {
+    const id = await newCapture("", "");
+    await sql.query(
+      "update captures set source_kind='instagram_dm', input_data=$2 where id=$1",
+      [
+        id,
+        JSON.stringify({
+          attachments: [
+            {
+              type: "ig_reel",
+              url: "https://www.instagram.com/reel/fixture/",
+              payload: { reel_video_id: "fixture" },
+            },
+          ],
+        }),
+      ],
+    );
+    const calls = mock.analyseMedia.mock.calls.length;
+    await processCapture(await job(), "pipeline-test");
+    const result = (
+      await sql.query<{ state: string; content_state: string }>(
+        "select state,content_state from captures where id=$1",
+        [id],
+      )
+    ).rows[0];
+    expect(result).toMatchObject({
+      state: "needs_content",
+      content_state: "URL_ONLY",
+    });
+    expect(mock.analyseMedia.mock.calls.length).toBe(calls);
+    expect(
+      (await sql.query("select * from artifacts where capture_id=$1", [id]))
+        .rows,
+    ).toHaveLength(0);
+  });
   it("retry reuses completed media/understanding checkpoints, without duplicate artifacts", async () => {
     const id = await newCapture("A practical source text.", "/script");
     mock.createArtifact.mockRejectedValueOnce(

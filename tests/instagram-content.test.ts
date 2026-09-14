@@ -53,12 +53,46 @@ describe("documented Instagram post-share content", () => {
     const content = instagramContent(
       Array.from({ length: 8 }, (_, i) => ({
         type: "ig_post",
-        url: `https://www.instagram.com/reel/fixture${i}/`,
+        url: `https://lookaside.fbsbx.com/ig_messaging_cdn/?asset_id=fixture${i}`,
         payload: {},
       })),
     );
     expect(content.candidates).toHaveLength(3);
     expect(content.captions).toEqual([]);
     expect(content.candidates[0].attachment.type).toBe("ig_post");
+  });
+  it("preserves the live-observed ig_reel format as a permalink, without fetching it as video", () => {
+    // Real account test on 2026-09-14 observed these fields; IDs are replaced.
+    const url = "https://www.instagram.com/reel/fixture/";
+    const [message] = normalizeInstagram({
+      object: "instagram",
+      entry: [
+        {
+          id: "receiver",
+          messaging: [
+            {
+              sender: { id: "owner" },
+              timestamp: 1789389788000,
+              message: {
+                mid: "fixture-reel",
+                attachments: [
+                  {
+                    type: "ig_reel",
+                    payload: { url, reel_video_id: "fixture-video-id" },
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      ],
+    });
+    const content = instagramContent(message.attachments);
+    expect(content.permalinks).toEqual([url]);
+    expect(content.candidates).toEqual([]);
+    expect(content.captions).toEqual([]);
+    expect(message.attachments[0].payload).toMatchObject({
+      reel_video_id: "fixture-video-id",
+    });
   });
 });

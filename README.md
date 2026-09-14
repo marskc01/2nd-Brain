@@ -18,7 +18,7 @@ npm run dev
 
 Open `http://localhost:3000`, then **Open demo**. Demo data is labelled, local to the browser and removable. AI, media uploads and Instagram do not run in demo mode.
 
-**The current Supabase project already has migrations 001–003 and its owner. Do not rerun or reset it.** For a fresh installation, configure `.env.local` from `.env.example`, inspect the intended Supabase project `dgbrxgkktdqjymjmnrzr`, apply migrations 001 (if not already applied) , 002 and 003 in order, create the sole auth user, set OWNER_USER_ID, and run:
+**The current Supabase project already has migrations 001–003 and its owner. Do not rerun or reset it.** For a fresh installation, configure `.env.local` from `.env.example`, inspect the intended Supabase project `dgbrxgkktdqjymjmnrzr`, apply migrations 001 (if not already applied), 002 and 003 in order, create the sole auth user, set OWNER_USER_ID, and run:
 
 ```sh
 npm run setup:owner
@@ -81,12 +81,13 @@ npm run test:e2e
 
 `npm run test:provider` makes actual OpenAI calls using the included original sample video and saves a private script/evidence result. Missing credentials produce an unverified exit code. `npm run sample:video` regenerates the synthetic fixture on macOS using FFmpeg and `say`; the committed video works for tests on Linux too.
 
-## Genuine human connection steps
+## Remaining owner steps for this deployment
 
-1. Provide authorised access/application credentials for the intended Supabase project and create the single owner auth account. Inspect existing data before applying migrations; never reset it.
-2. Supply an OpenAI application key and billing access. Review operating limits.
-3. Choose and authorise web/worker hosting, set production secrets and verify the manual workflow.
-4. Authorise the Meta professional-account/app configuration, required permissions/review and subscription; send actual test messages from the allowed owner.
+1. Add real media or a transcript to a Reel marked Needs content. The tested Instagram payload supplied only a permalink.
+2. Review the Railway trial before it expires or runs out of credit; paid continuation requires your own plan decision. Keep the separately funded OpenAI account active.
+3. Complete any future Meta business verification/review required for broader account access. Current delivery from the tested owner is verified.
+
+Supabase, Vercel, the Railway worker, the OpenAI service account and the tested Instagram connection are already configured. Do not create duplicate accounts or rerun their initial setup. Today’s paid reservation allowance is full; failed paid work can be retried after the next UTC-day reset (8am Perth). The additional transcript-fallback test is still incomplete.
 
 ## Limits
 

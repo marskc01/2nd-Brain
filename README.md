@@ -2,7 +2,7 @@
 
 An owner-only application that turns captured source text and accessible media into useful private outputs. Version 0.2 continues the original foundation with an implemented manual workflow, provider adapters, transactional worker, authenticated dashboard and usage guide.
 
-**Status:** local application and automated tests pass. No cloud deployment, live Supabase connection, actual OpenAI perception, or live Instagram DM/reply was verified. The original full specification is not yet complete. No existing remote database was modified.
+**Live status (14 September 2026):** [KDN Brain](https://2nd-brain-phi.vercel.app/) has owner-only Supabase access and an online Railway worker. A real Instagram share was automatically captured. An owned sample video completed actual transcription, sampled visual analysis and a visible script/action. The tested Instagram Reel supplied only a permalink and remains Needs content; arbitrary Reel video access is not verified. Automatic DMs and external actions are off. See the verification guide for exact limits and remaining scope.
 
 ## Start here
 
@@ -18,7 +18,7 @@ npm run dev
 
 Open `http://localhost:3000`, then **Open demo**. Demo data is labelled, local to the browser and removable. AI, media uploads and Instagram do not run in demo mode.
 
-For the real service, configure `.env.local` from `.env.example`, inspect the intended Supabase project `dgbrxgkktdqjymjmnrzr`, apply migrations 001 (if not already applied) and 002 in order, create the sole auth user, set OWNER_USER_ID, and run:
+**The current Supabase project already has migrations 001–003 and its owner. Do not rerun or reset it.** For a fresh installation, configure `.env.local` from `.env.example`, inspect the intended Supabase project `dgbrxgkktdqjymjmnrzr`, apply migrations 001 (if not already applied), 002 and 003 in order, create the sole auth user, set OWNER_USER_ID, and run:
 
 ```sh
 npm run setup:owner
@@ -81,12 +81,13 @@ npm run test:e2e
 
 `npm run test:provider` makes actual OpenAI calls using the included original sample video and saves a private script/evidence result. Missing credentials produce an unverified exit code. `npm run sample:video` regenerates the synthetic fixture on macOS using FFmpeg and `say`; the committed video works for tests on Linux too.
 
-## Genuine human connection steps
+## Remaining owner steps for this deployment
 
-1. Provide authorised access/application credentials for the intended Supabase project and create the single owner auth account. Inspect existing data before applying migrations; never reset it.
-2. Supply an OpenAI application key and billing access. Review operating limits.
-3. Choose and authorise web/worker hosting, set production secrets and verify the manual workflow.
-4. Authorise the Meta professional-account/app configuration, required permissions/review and subscription; send actual test messages from the allowed owner.
+1. Add real media or a transcript to a Reel marked Needs content. The tested Instagram payload supplied only a permalink.
+2. Review the Railway trial before it expires or runs out of credit; paid continuation requires your own plan decision. Keep the separately funded OpenAI account active.
+3. Complete any future Meta business verification/review required for broader account access. Current delivery from the tested owner is verified.
+
+Supabase, Vercel, the Railway worker, the OpenAI service account and the tested Instagram connection are already configured. Do not create duplicate accounts or rerun their initial setup. Today’s paid reservation allowance is full; failed paid work can be retried after the next UTC-day reset (8am Perth). The additional transcript-fallback test is still incomplete.
 
 ## Limits
 

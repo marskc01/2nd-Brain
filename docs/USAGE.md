@@ -1,161 +1,78 @@
-# KDN Brain — how to use it
+# KDN Brain — daily use
 
-Updated 14 September 2026. This version adds a working manual-capture implementation to the earlier foundation. Live OpenAI, Supabase and Instagram operation still requires explicit application credentials. The demo is separate and uses browser-local example data.
+Updated 14 September 2026. The live web app, owner authentication, Instagram capture and cloud worker are connected. An owned sample video completed real OpenAI speech/visual analysis and produced a visible script. Instagram sharing works without copying a URL; the tested Reel supplied only a link, so its video still needs additional content.
 
-## 1. Explore it now
+## Send a Reel
 
-From the saved **2nd Brain** project:
+1. From **@kadencondie**, open a Reel in Instagram.
+2. Tap the paper-plane **Share** button, choose **@kdn_brain**, and send it.
+3. Open [KDN Brain](https://2nd-brain-phi.vercel.app/) and sign in with your owner account, **kadencondie@icloud.com**, using the password you created.
+4. Open **Inbox** and select the capture. The worker processes queued items automatically; your laptop can be closed.
+5. Read the status, content coverage and any **Outputs**. **Actions → Completed** means the private output was actually created.
 
-```sh
-cd "/Users/kadencondie/Documents/ChatGPT/2nd Brain"
-npm ci
-npm run dev
-```
+[Your automatically captured Reel](https://2nd-brain-phi.vercel.app/?item=6c571683-ae78-4e00-a999-90cc293c69a9#inbox) is ready in Inbox. It currently says **Needs content / URL only** because Meta delivered the permalink without video bytes or a caption. That is a real capture, not a watched Reel.
 
-Open <http://localhost:3000> and choose **Open demo**. No credentials are needed. The sample experiment and unavailable Reel illustrate the interface. Demo text captures become local references, without AI analysis or research. **Remove demo data** clears this browser's examples and local captures; **Settings → Reload demo examples** restores examples.
+No DM acknowledgement or completion reply is enabled. Read results in the dashboard. Separate follow-up DMs are not automatically assigned to a previous Reel. For a reliable instruction alongside uploaded content, use Quick capture; for extra material on an existing Reel, use that item's form.
 
-Demo mode does not receive DMs, call OpenAI, process uploads, or write to Supabase. Do not mistake the example experiment for an experiment that was actually run.
+## Supply missing content
 
-## 2. Connect the real application once
+1. Open the intended **Needs content** item.
+2. Find **Add content to this capture**.
+3. Select **Additional media** for an accessible video, screen recording or screenshots, or paste the actual transcript in **Additional transcript**.
+4. Click **Attach & resume**. It queues the same capture again; keep that item open to see its result.
 
-### Supabase
+Use content you are authorised to upload. Supported files: MP4, MOV, WebM, JPEG and PNG; at most 25 MB each, 120 seconds per video, 4096 pixels per side and three assets per capture. If Instagram offers a permitted download, you can use it; otherwise a suitable authorised recording or transcript is the fallback. A URL alone is not enough for the application to watch a Reel.
 
-The intended project reference is `dgbrxgkktdqjymjmnrzr`. Access to that project has not been demonstrated. Use that project if it is yours and accessible; otherwise choose an explicit replacement.
+If a job already holds the capture during upload, wait for that job and use **Finish upload** when offered. Matching output types are updated in place. Do not create a second Quick capture just to add the missing video.
 
-1. Open the project dashboard and inspect existing tables/data. Back up any existing production database before applying schema changes.
-2. Copy `.env.example` to `.env.local`. Fill the project URL, browser anon key and server service-role key. Keep the service-role key out of browser code and screenshots.
-3. Apply `supabase/migrations/202609140001_initial.sql` **only if the initial schema is not already applied**. Then apply `202609140002_working_pipeline.sql`. These migrations create/add schema; they do not reset the database. Migration 002 also closes permissions left open by 001. Do not rerun 001 over existing tables.
-4. In Supabase Authentication, create the single owner account with an email and password. Set `OWNER_USER_ID` in `.env.local` to its auth UUID. Disable public signups.
-5. Run `npm run setup:owner`. This ensures the profile exists and preserves an existing profile.
-6. Confirm the `kdn-media` Storage bucket exists and is private. Migration 002 creates it for fresh installations; if it already existed, verify its limits and privacy manually.
+## Tell Brain what you want
 
-### OpenAI
+For manual captures, choose **Quick capture**, add actual source text or a file, then fill **What would you like from this?**. You can use ordinary language or these shortcuts:
 
-Use an **application API key with billing enabled**. A Codex subscription, connected plugin, or browser login is not an API credential for this service.
-
-Set `OPENAI_API_KEY` in `.env.local` and in the deployed worker environment. The models are centralised in `.env.example`/`src/lib/config.ts`. The timestamped audio adapter uses `whisper-1`; do not change that value without changing the adapter. Reasoning and sampled vision default to `gpt-4.1-mini`. Embeddings default to `text-embedding-3-small` at 1536 dimensions. Actual account access remains a live test.
-
-Defaults reserve an estimated $0.50 per processing attempt, with $2 per capture and $5 per UTC day. Reservations are concurrency-safe but are **not reconciled invoices or a guarantee of exact provider spend**. Configure provider-side project controls too. Retried jobs can reserve more budget. A checkpoint avoids repeating successful stages.
-
-### Start both processes
-
-In the web terminal:
-
-```sh
-npm run doctor
-npm run dev
-```
-
-In a second terminal, from the same project directory:
-
-```sh
-npm run worker
-```
-
-The worker reads `.env.local`, claims one capture at a time and needs FFmpeg/ffprobe on PATH. On this Mac those tools were found. For deployment, use the included worker Dockerfile.
-
-Sign in at <http://localhost:3000>. **Settings** should show successful database queries and a recent worker heartbeat. “Configured, unverified” means credentials exist; it does not certify the provider connection.
-
-## 3. Give Brain your context
-
-Use **Projects & goals** to add or edit current work and desired outcomes. Archive obsolete context instead of treating it as current. In **Settings**, add your skills, interests, existing tools, markets, ambitions, available time, constraints and things you do not want.
-
-No business, career or location facts from the original prompt were inserted as confirmed personal facts. Demo projects and examples stay separate from the database.
-
-## 4. Make your first real capture
-
-Start with text so you can verify the full application before involving Instagram.
-
-1. Select **Quick capture**.
-2. Paste this example in **Source text or transcript**: “Open a short property walkthrough on its most distinctive visual feature, then show the layout and close-up details.”
-3. In **What would you like from this?**, enter “Write a 30-second script using this structure. Mark any invented property details as placeholders.”
-4. Select **Save & process**.
-5. Open the item in **Inbox**. Its private script appears under **Outputs** after the worker succeeds.
-6. Check the coverage: text input should not say that video was analysed. Download the result as Markdown.
-
-For a no-provider database test, use `/save` with source text. That stores a real searchable reference without calling OpenAI.
-
-## 5. Test a video
-
-The repository includes `tests/fixtures/media/owned-sample.mp4`, an original synthetic 10-second test clip. It shows a red square on the left, then a blue square on the right, with known speech. The manifest records its expected content.
-
-Upload it in **Quick capture**, with “Make a short script using this visual contrast.” Check the output and timestamped evidence. Video processing samples at regular intervals plus detected scene changes, up to 12 frames per asset. It transcribes audio with segment timestamps and analyses sampled frames, including readable on-screen text. It is not exhaustive frame-by-frame viewing.
-
-Supported uploads: MP4, MOV, WebM, JPEG and PNG. Limits: 25 MB per asset, 120 seconds per video, 4096 pixels per side and three uploads per capture. Browser upload goes directly to private Supabase Storage using a short-lived token for one path; large media does not pass through a Vercel function.
-
-For the direct provider smoke test:
-
-```sh
-npm run test:provider
-```
-
-This command makes billable OpenAI calls, checks known content, and writes the resulting script/evidence into `work/provider-smoke/`. It is separate from the database/UI test. With no key it exits as **unverified**, without a paid call.
-
-## 6. Tell it what you want
-
-| Instruction | What the application produces |
+| Instruction | Expected private work |
 | --- | --- |
-| `/save` or “Just save this” | A reference; no unnecessary research or experiment |
-| `/research` or “Check this claim” | A private assessment using current web research where available |
-| `/compare` | A comparison artifact with research sources |
-| `/experiment` or “Could this be a service?” | A small proposed experiment, including uncertainty and success criteria |
-| `/script` | A private script draft |
-| “Create a production checklist” | A checklist when selected by the model |
-| `/project` | A private project note attached to the project explicitly selected in the form |
-| No instruction | A bounded private workflow chosen from actual content and stored context |
+| `/save` — just keep this reference | Searchable reference, without unnecessary research |
+| `/script` — use this structure | Script draft based on accessible evidence |
+| `/compare` — compare these tools | Comparison with available research |
+| `/research` — check the claim | Assessment with sources and uncertainty |
+| `/experiment` — could this work for me? | Proposed test, assumptions and success criteria |
+| `/project` plus a selected project | Relevant private project note |
 
-One artifact is created per run. “Completed” means that artifact exists; it does not mean its proposed experiment ran, footage was edited, or content was published. Source claims remain claims until evidence supports them.
+Research adapters are implemented, but a live research acceptance test has not been run. “Completed” does not mean a proposed experiment was carried out or anything was published. This version usually produces one private artifact per run, not a bundle of automatically executed external operations.
 
-## 7. Use Instagram after connecting and testing Meta
+[Open the completed sample-video script](https://2nd-brain-phi.vercel.app/?item=200823b0-ca9d-4ee5-88d6-9ec63c42a26c#inbox). Expand **Evidence and uncertainty** to see observations and timestamps, and use **Download Markdown** to save the output. It is clearly labelled as a synthetic provider test, separate from your Instagram Reels. Visual analysis uses selected frames, not exhaustive viewing.
 
-The webhook endpoint is `/api/webhooks/meta`. The app requires `META_APP_SECRET`, `META_VERIFY_TOKEN`, `OWNER_USER_ID` and `OWNER_INSTAGRAM_ID`. The last value is the sending owner's **Instagram-scoped numeric ID**, not `@kdn_brain` and not the receiving account's ID.
+## Add your context
 
-Follow `docs/INSTAGRAM_FEASIBILITY.md`. Meta's API collection confirms professional-account messaging and warns that shares can supply only a URL. Receiving a Reel share does not prove a playable video is available.
+In **Projects & goals**, add current projects and goals. In **Settings**, write your skills, interests, existing tools, markets, time, constraints and things you do not want. The worker uses this context when deciding what work is useful. Example business ideas from the original prompt were not inserted as facts about you.
 
-Once live delivery is proven, send Reels to `@kdn_brain`. The signed event is durably stored and queues processing. Unknown senders are quarantined; message echoes do not queue work. Identical webhook retries are deduplicated; a deliberate second share with a new message ID remains a separate capture.
+## Where things live
 
-A separate follow-up DM is **not automatically attached** to a previous Reel. Each message is preserved independently. For reliable instructions or additional material, open the intended capture and use its own controls. Automatic DM replies are not enabled yet; results are in the dashboard.
+- **Today:** recent completed outputs and up to three next steps.
+- **Inbox:** captures, coverage, evidence, missing-content forms and outputs.
+- **Actions:** private work and its real completion status.
+- **Projects & goals:** editable context and project-linked items.
+- **Experiments:** proposed briefs; experiment results tracking remains unfinished.
+- **Ask Brain:** search stored records with source links. Conversational memory answers remain unfinished.
+- **Settings:** worker heartbeat, budget reservations, automation pause, context and record export.
 
-## 8. When the Reel is unavailable
+**Pause automation** stops new jobs; a current job may finish. Export contains owner-facing records, not original media bytes or raw operational logs. Inbox currently displays the latest 200 captures.
 
-Open the **Needs content** item in Inbox. Under **Add content to this capture**, upload a recording/image or paste a transcript. Attachments resume the original capture. Matching output types are updated in place rather than duplicated.
+## Costs and availability
 
-If the upload finishes while a worker still holds the item, wait for that run to finish and click **Finish upload**. This prevents a worker from finalising stale inputs. If a project is required, link one on the item and then **Retry processing**.
+The Railway worker is deployed with one persistent replica on the existing **US$5 / 30-day trial**. It runs independently of Codex and your laptop while the hosting account remains active. Continuing after the trial may require a paid hosting plan; none was purchased by the assistant.
 
-A URL-only capture is never labelled as watched. If you only need the reference, `/save` preserves the link with that limitation.
+OpenAI uses your separately funded API account, with automatic credit reload off at setup. The worker enforces **US$1 per UTC day**, **US$1 per capture**, and an estimated **US$0.50 reservation per paid attempt**. UTC midnight is 8am Perth time. Reservations are conservative estimates, not reconciled invoices or an exact provider-spend guarantee. Today’s setup tests have used the full US$1 reservation allowance; new paid work can be retried after the next reset at 8am Perth. These reservations are not actual OpenAI charges. Failed or retried paid attempts may consume additional reservations.
 
-## 9. Daily use
+## If something stalls
 
-- **Today:** open useful completed outputs and address missing content; up to three next steps.
-- **Inbox:** filter recent captures and inspect their evidence and coverage.
-- **Actions:** see private work actually completed, linked to its artifact.
-- **Projects & goals:** edit personal context and see project-linked captures.
-- **Experiments:** read proposed test briefs. Results tracking is not yet implemented.
-- **Ask Brain:** keyword search of stored records, returning the sources. Automated capture processing also tries semantic retrieval, falling back to keywords if embeddings fail. Ask Brain does not yet generate conversational answers.
-- **Settings:** connection configuration, worker heartbeat, budget reservations, editable context, pause and record export.
-
-Pause stops new claims; a job already executing may finish. Export downloads all owner-facing records, but original media bytes and raw webhook/worker logs are separate. The Inbox currently shows the latest 200 records.
-
-## 10. Run without your laptop
-
-Deploy Next.js on Vercel or a Node web host, Supabase for data/auth/storage, and the separate Node/FFmpeg worker on a persistent container host. Set explicit application credentials on each service. See `docs/DEPLOYMENT.md`.
-
-**A local terminal or the demo is not a continuously deployed system. No deployment was performed in this session.**
-
-## Troubleshooting
-
-| Symptom | Action |
+| What you see | What to do |
 | --- | --- |
-| Sign in disabled | Add public Supabase URL/anon key and restart/rebuild the web app |
-| Sign in rejected | Check the owner account's email/password and OWNER_USER_ID |
-| Database setup error | Inspect the intended project and apply migrations in order; run setup:owner |
-| No recent worker heartbeat | Start/restart the worker using the same Supabase environment |
-| Missing OpenAI key | Add the application key, restart the worker, then Retry |
-| Budget declined | Inspect reservations, pause status and limits; retry only after resolving the limit |
-| Media cannot decode | Re-export to supported media within size/duration/dimension limits |
-| Shared Reel has no video | Attach accessible owned/authorised content to that capture |
-| Research has no sources | Treat the result as partial; no claim is marked verified merely because research ran |
+| Needs content / URL only | Add actual media or a transcript to that item |
+| Loading error | Use Retry loading; automatic refresh also retries without deleting captures |
+| No recent worker heartbeat | Check the Railway service and trial/credit status |
+| Budget reservation declined | Review Settings, pause state and daily reset; do not repeatedly retry |
+| Failed media processing | Check file type, size and duration, then use Retry |
+| Sign-in rejected | Use the owner email/password; Supabase dashboard login is a separate login |
 
-## Still outside this version
-
-Live connections are unverified. Automatic replies, external-action executors, paid generation, approval UI, standing-rule management, personal-memory chat, scheduled reviews, complete retention/deletion, opportunity scoring, MCP and Higgsfield remain unfinished. Their absence is displayed rather than hidden behind connection badges.
+Automatic DMs, outreach, publishing, purchases, paid image/video generation, Higgsfield, MCP, approval screens, complete reviews/scoring and retention/deletion automation are not enabled. No action in this version can perform those external operations.

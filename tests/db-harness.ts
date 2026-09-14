@@ -10,6 +10,7 @@ export async function database() {
   for (const file of [
     "202609140001_initial.sql",
     "202609140002_working_pipeline.sql",
+    "202609140003_retry_budget.sql",
   ])
     await db.exec(await readFile(`supabase/migrations/${file}`, "utf8"));
   await db.query("insert into auth.users(id) values($1)", [ownerId]);

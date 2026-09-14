@@ -1,6 +1,6 @@
 # Instagram feasibility
 
-Checked 2026-09-14. **Real owner DM/Reel verification: not run. Meta dashboard test delivery: verified.**
+Checked 2026-09-14. **Real owner text and Reel delivery: verified. Playable Reel media: unverified. Owned uploaded-video AI processing: verified separately.**
 
 - @kdn_brain is Professional. The owner accepted the KDN Brain-IG tester invitation and approved profile/media/messages access plus server-only Vercel credential storage.
 - Parent Meta app: 1017787317972730. Instagram app: 1542214094598830. Recipient account: 17841432191521984; this is not the allowed sender ID.
@@ -8,8 +8,8 @@ Checked 2026-09-14. **Real owner DM/Reel verification: not run. Meta dashboard t
 - **For this Instagram Login configuration, META_APP_SECRET must contain the Instagram app secret shown in Instagram API setup.** A Meta dashboard test with the parent Basic-settings secret returned 401. After replacing it with the Instagram app secret and redeploying, the same test returned HTTP 200 at 20:43:08 and SQL verified one stored raw envelope. Signature validation remained mandatory throughout.
 - The actual dashboard-generated sample has entry[].changes[] with field=messages, rather than entry[].messaging[]. It is preserved as an envelope and deliberately does not claim a real owner capture or create an action.
 - messages is subscribed at app level. Several unrelated default fields reappear after the UI reports successful unsubscribe; narrowing those settings is not verified. Only basic/manage_messages permissions have been added, with no comment/publishing permission.
-- The owner completed token generation through a user-operated browser flow, and the account webhook subscription now shows On. Token storage in Vercel is pending owner entry into the prepared Production secret field. App is Unpublished; its Publish screen currently requires a privacy-policy URL. Real-account eligibility and review remain unverified.
-- Owner sender ID, worker, OpenAI credentials and live media access are still missing. Instagram's account-level Allow access to messages was last observed off. Automatic replies remain disabled.
+- The owner completed token generation through a user-operated browser flow, and the account webhook subscription now shows On. The owner saved META_ACCESS_TOKEN as a Vercel Production secret, and the subsequent production deployment succeeded. The owner approved publishing. Meta confirmed the app is Published after the privacy-policy and deletion-instructions URLs were saved. Actual owner text and Reel deliveries were verified at 20:53 Perth. This proves access for the tested owner/account configuration; broader eligibility and advanced review remain unverified.
+- The owner sender ID was established from the real delivery and saved in Vercel. Worker hosting and OpenAI credentials are now connected; playable Instagram-media access remains unverified. An earlier account-setting observation does not override the subsequent successful real message delivery. Automatic replies remain disabled.
 
 ## Shared-post update verified in official documentation
 
@@ -17,7 +17,7 @@ On 2026-09-14, the signed-in browser loaded Meta's [Instagram post shares transi
 
 The receiver now extracts bounded captions as source claims and deduplicates media candidates by post ID (or URL when no ID is available). It attempts `ig_post`, legacy `share`, image and video URLs only under the existing explicit hostname allow-list, public-network checks, no-redirect rule and MIME/size limits. Storage uses the returned media MIME type; FFmpeg validates content before analysis. A URL is a retrieval candidate, not proof of playable video. HTML/permalink responses do not become watched content. Caption-only results remain METADATA_ONLY.
 
-The official example includes a signed lookaside.fbsbx.com media URL. This documents a delivery format; it does not verify availability for arbitrary Reels or establish a fixed expiry. No hostname has been enabled in the deployed worker because a worker and live DM payload are still missing. The new tests use fake values in the documented shape; they are not live account tests.
+The official example includes a signed lookaside.fbsbx.com media URL. This documents a delivery format; it does not verify availability for arbitrary Reels or establish a fixed expiry. No hostname has been enabled in the deployed worker because the actual Reel payload contained only a public permalink. The new tests use fake values in the documented shape; they are not live account tests.
 
 ## Official sources actually inspected
 
@@ -33,10 +33,10 @@ The [Instagram Platform messaging page](https://developers.facebook.com/docs/ins
 | --- | --- | --- |
 | Account | Professional business/creator account documented in Meta's collection | @kdn_brain Professional account verified in Instagram settings on 2026-09-14 |
 | Login/permissions | Instagram Login path and business basic/manage-messages scopes documented; app has no OAuth onboarding UI | Manual setup required |
-| Text DM | Defensive `entry[].messaging[].message.text`/`mid` normalisation; synthetic fixture | Live payload unverified |
-| Shared Reel/post | Share URL may be present; unknown fields preserved; never treated as playable video automatically | ig_post post-share shape documented; actual Reel payload and retrieval unverified |
+| Text DM | Defensive `entry[].messaging[].message.text`/`mid` normalisation; synthetic fixture | Actual owner text received and preserved |
+| Shared Reel/post | Share URL may be present; unknown fields preserved; never treated as playable video automatically | ig_post shape documented; live ig_reel observed with payload.url and reel_video_id, URL only; retrieval unverified |
 | Direct image/video | Parser preserves attachment type, payload and URL; worker attempts only `image`/`video` with a URL and an explicitly approved hostname | Live direct-media payload unverified |
-| Subscriptions | Configure signed webhook endpoint, then consult the actual Meta dashboard/reference for message subscriptions and account subscription | Subscription/review unverified |
+| Subscriptions | Configure signed webhook endpoint, then consult the actual Meta dashboard/reference for message subscriptions and account subscription | Account subscription On; current owner delivery verified; broader review unverified |
 | App Review | Tester-role requirements documented; production access and review must be established for the chosen app/account configuration | No App Review completed |
 | Media expiry | No fixed lifetime is assumed; retrieval is attempted during worker acquisition | Timing/URL lifetime unverified; queue delay can lose an expiring URL |
 | Automated replies | Initial user contact prerequisite documented; current reply window not established here | Replies disabled; no notification executor |
@@ -69,19 +69,23 @@ Legacy `tests/fixtures/instagram-*.json` payloads are **simulated examples**, no
 
 ## Live diagnostic record
 
-Only the verification handshake and dashboard-generated synthetic delivery are verified as of 2026-09-14. They do not prove live account access.
+The verification handshake, dashboard test and actual owner text/Reel deliveries are verified as of 2026-09-14. The first Reel was quarantined before the sender allow-list was configured, then released into the owner Inbox with an audit record. A new share is needed to verify automatic acceptance after deployment. The actual attachment type was ig_reel with payload.url (a public Instagram Reel permalink) and payload.reel_video_id; no caption or playable media was supplied. The parser now recognises this observed shape and separates website permalinks from media candidates.
 
 | Test | Received | Content accessible | Output visible | Result |
 | --- | --- | --- | --- | --- |
 | Dashboard synthetic messages test | HTTP 200; raw envelope stored | Synthetic text only | No owner output expected | Verified 20:43 Perth; not a real DM |
-| Owner text | — | — | — | Not run |
-| Shared Reel | — | — | — | Not run |
+| Owner text | Signed event preserved at 20:53:13 Perth | Test text | Kept as diagnostic event | Real delivery verified |
+| Shared Reel | Signed event preserved at 20:53:24 Perth | Public permalink and video ID only | URL_ONLY / Needs content in owner Inbox after audited release | Receipt and visible fallback verified; AI not run |
 | Shared post | — | — | — | Not run |
 | Direct image | — | — | — | Not run |
 | Direct video | — | — | — | Not run |
-| Expired media + authenticated fallback | — | — | — | Local logic tested; live not run |
+| Expired media + authenticated fallback | Synthetic URL-only capture and transcript resume verified | Same item revision advanced | Paid retry blocked at daily budget, no output | Expiry and completed fallback output remain unverified |
 | Automated reply | — | — | — | Disabled |
 
 ## Webhook setup documentation verified 2026-09-14
 
-The authenticated browser loaded [Setup Webhooks Subscriptions](https://developers.facebook.com/documentation/instagram-platform/webhooks), updated 2026-03-03. It describes raw-body SHA256 validation and directs developers to an app secret in Basic settings. The live diagnostic above established that this Instagram Login setup instead requires its Instagram-specific secret. It also documents a GET challenge/verify-token handshake, app field subscriptions, and a separate professional-account `/me/subscribed_apps` subscription. For this workflow the `messages` field uses the two selected Instagram Business permissions. The example uses graph.instagram.com/v26.0. The page and actual dashboard say the app must be Live/published for webhook delivery. Its requirements table also lists Advanced Access and Business Verification for Instagram Login; the exact connected-app publication/review path still needs verification. Only the dashboard-generated delivery is verified; real account delivery is not claimed.
+The authenticated browser loaded [Setup Webhooks Subscriptions](https://developers.facebook.com/documentation/instagram-platform/webhooks), updated 2026-03-03. It describes raw-body SHA256 validation and directs developers to an app secret in Basic settings. The live diagnostic above established that this Instagram Login setup instead requires its Instagram-specific secret. It also documents a GET challenge/verify-token handshake, app field subscriptions, and a separate professional-account `/me/subscribed_apps` subscription. For this workflow the `messages` field uses the two selected Instagram Business permissions. The example uses graph.instagram.com/v26.0. The page and actual dashboard say the app must be Live/published for webhook delivery. Its requirements table also lists Advanced Access and Business Verification for Instagram Login; the exact connected-app publication/review path still needs verification. Subsequent actual owner delivery is verified for this connected account; broader access requirements remain unverified.
+
+## Automatic delivery and worker acceptance
+
+At 21:23:19 Perth on 2026-09-14, a fresh share from the allow-listed owner was accepted without a manual release. Capture 6c571683-ae78-4e00-a999-90cc293c69a9 reached URL_ONLY / needs_content at 21:23:59. The earlier share had required a manual quarantine release; that distinction is preserved. The cloud worker independently processed an owned synthetic upload into MEDIA_ANALYSED with speech, sampled visual observations, one script and a completed action. The Instagram Reel itself remains unanalysed until actual content is attached.

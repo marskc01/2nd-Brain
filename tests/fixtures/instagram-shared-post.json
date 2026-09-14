@@ -1,0 +1,29 @@
+{
+  "object": "instagram",
+  "entry": [
+    {
+      "id": "ig_business_account",
+      "time": 1789400000000,
+      "messaging": [
+        {
+          "sender": { "id": "owner_ig_id" },
+          "recipient": { "id": "ig_business_account" },
+          "timestamp": 1789400000000,
+          "message": {
+            "mid": "m_fixture_1",
+            "text": "Research this",
+            "attachments": [
+              {
+                "type": "share",
+                "payload": {
+                  "url_unverified_fixture_note": "A real playable URL is deliberately not assumed."
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "_fixture": "SIMULATED; shape requires live account verification"
+}

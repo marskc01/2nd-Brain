@@ -1,0 +1,20 @@
+{
+  "type": "original synthetic test video",
+  "file": "media/owned-sample.mp4",
+  "created": "2026-09-14",
+  "provenance": "Generated for this project from FFmpeg colour/box filters and macOS speech synthesis; no Instagram footage or third-party video used.",
+  "duration_seconds": 10,
+  "expected_speech": "A red square is on the left. A blue square is on the right. Compare the opening shots before choosing an edit.",
+  "expected_visuals": [
+    {
+      "range_seconds": [0, 5],
+      "observation": "Red square on the left of a white background"
+    },
+    {
+      "range_seconds": [5, 10],
+      "observation": "Blue square on the right of a white background"
+    }
+  ],
+  "expected_on_screen_text": "None",
+  "verification": "Local extraction is separate from real-provider perception. Run npm run test:provider with application credentials to test transcription and vision."
+}

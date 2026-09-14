@@ -1,6 +1,15 @@
 # Instagram feasibility
 
-Checked 2026-09-14. **Live DM/Reel verification: not run.** iPhone Mirroring confirmed `@kdn_brain` has account type **Professional**. The account-wide **Allow access to messages** switch was off when inspected; enabling it awaits owner approval. No app token, webhook subscription or real media retrieval has been verified. Meta developer registration is now complete and My Apps is accessible. A KDN Brain app with the Instagram messaging use case is prepared; final creation awaits owner acceptance of Meta Platform Terms and Developer Policies.
+Checked 2026-09-14. **Real owner DM/Reel verification: not run. Meta dashboard test delivery: verified.**
+
+- @kdn_brain is Professional. The owner accepted the KDN Brain-IG tester invitation and approved profile/media/messages access plus server-only Vercel credential storage.
+- Parent Meta app: 1017787317972730. Instagram app: 1542214094598830. Recipient account: 17841432191521984; this is not the allowed sender ID.
+- Production callback https://2nd-brain-phi.vercel.app/api/webhooks/meta passed Meta verification at 20:38 Perth time. META_VERIFY_TOKEN is a Vercel Production secret.
+- **For this Instagram Login configuration, META_APP_SECRET must contain the Instagram app secret shown in Instagram API setup.** A Meta dashboard test with the parent Basic-settings secret returned 401. After replacing it with the Instagram app secret and redeploying, the same test returned HTTP 200 at 20:43:08 and SQL verified one stored raw envelope. Signature validation remained mandatory throughout.
+- The actual dashboard-generated sample has entry[].changes[] with field=messages, rather than entry[].messaging[]. It is preserved as an envelope and deliberately does not claim a real owner capture or create an action.
+- messages is subscribed at app level. Several unrelated default fields reappear after the UI reports successful unsubscribe; narrowing those settings is not verified. Only basic/manage_messages permissions have been added, with no comment/publishing permission.
+- The owner completed token generation through a user-operated browser flow, and the account webhook subscription now shows On. Token storage in Vercel is pending owner entry into the prepared Production secret field. App is Unpublished; its Publish screen currently requires a privacy-policy URL. Real-account eligibility and review remain unverified.
+- Owner sender ID, worker, OpenAI credentials and live media access are still missing. Instagram's account-level Allow access to messages was last observed off. Automatic replies remain disabled.
 
 ## Shared-post update verified in official documentation
 
@@ -16,7 +25,7 @@ Meta's [official Instagram API collection](https://www.postman.com/meta/instagra
 
 The collection states that shared media/post notifications include the share URL. This does **not** establish a downloadable video file, an expiry duration, access to arbitrary third-party Reels, or entitlement to bypass platform access controls. Group messaging is not supported in that documented flow. A message recipient must have initiated contact. Testers need the appropriate app/account roles and granted permissions.
 
-The [Instagram Platform messaging page](https://developers.facebook.com/docs/instagram-platform/instagram-api-with-instagram-login/messaging-api) and [message webhook reference](https://developers.facebook.com/docs/instagram-platform/webhooks/reference/messages) failed to load in the documentation tool. Therefore other webhook subtype payloads, exact subscriptions, access-review entitlements, reply-window rules and temporary URL lifetime remain **unconfirmed**, rather than inferred from third-party examples. The official collection's example uses the Instagram Login Send API host `graph.instagram.com`; the separate Facebook Login path uses a different setup/token model. Do not mix them.
+The [Instagram Platform messaging page](https://developers.facebook.com/docs/instagram-platform/instagram-api-with-instagram-login/messaging-api) and [message webhook reference](https://developers.facebook.com/docs/instagram-platform/webhooks/reference/messages) failed to load in the documentation tool. Therefore other webhook subtype payloads, access-review entitlements for this connected app, reply-window rules and temporary URL lifetime remain **unconfirmed**, rather than inferred from third-party examples. The official collection's example uses the Instagram Login Send API host `graph.instagram.com`; the separate Facebook Login path uses a different setup/token model. Do not mix them.
 
 ## Support and verification matrix
 
@@ -60,10 +69,11 @@ Legacy `tests/fixtures/instagram-*.json` payloads are **simulated examples**, no
 
 ## Live diagnostic record
 
-No rows are marked verified as of 2026-09-14.
+Only the verification handshake and dashboard-generated synthetic delivery are verified as of 2026-09-14. They do not prove live account access.
 
 | Test | Received | Content accessible | Output visible | Result |
 | --- | --- | --- | --- | --- |
+| Dashboard synthetic messages test | HTTP 200; raw envelope stored | Synthetic text only | No owner output expected | Verified 20:43 Perth; not a real DM |
 | Owner text | — | — | — | Not run |
 | Shared Reel | — | — | — | Not run |
 | Shared post | — | — | — | Not run |
@@ -71,3 +81,7 @@ No rows are marked verified as of 2026-09-14.
 | Direct video | — | — | — | Not run |
 | Expired media + authenticated fallback | — | — | — | Local logic tested; live not run |
 | Automated reply | — | — | — | Disabled |
+
+## Webhook setup documentation verified 2026-09-14
+
+The authenticated browser loaded [Setup Webhooks Subscriptions](https://developers.facebook.com/documentation/instagram-platform/webhooks), updated 2026-03-03. It describes raw-body SHA256 validation and directs developers to an app secret in Basic settings. The live diagnostic above established that this Instagram Login setup instead requires its Instagram-specific secret. It also documents a GET challenge/verify-token handshake, app field subscriptions, and a separate professional-account `/me/subscribed_apps` subscription. For this workflow the `messages` field uses the two selected Instagram Business permissions. The example uses graph.instagram.com/v26.0. The page and actual dashboard say the app must be Live/published for webhook delivery. Its requirements table also lists Advanced Access and Business Verification for Instagram Login; the exact connected-app publication/review path still needs verification. Only the dashboard-generated delivery is verified; real account delivery is not claimed.

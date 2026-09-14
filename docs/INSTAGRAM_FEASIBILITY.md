@@ -1,6 +1,14 @@
 # Instagram feasibility
 
-Checked 2026-09-14. **Live DM/Reel verification: not run.** iPhone Mirroring confirmed `@kdn_brain` has account type **Professional**. The account-wide **Allow access to messages** switch was off when inspected; enabling it awaits owner approval. No app token, webhook subscription or real media retrieval has been verified. Facebook is signed in, but Meta developer registration opens a blank page in the setup browser.
+Checked 2026-09-14. **Live DM/Reel verification: not run.** iPhone Mirroring confirmed `@kdn_brain` has account type **Professional**. The account-wide **Allow access to messages** switch was off when inspected; enabling it awaits owner approval. No app token, webhook subscription or real media retrieval has been verified. Meta developer registration is now complete and My Apps is accessible. A KDN Brain app with the Instagram messaging use case is prepared; final creation awaits owner acceptance of Meta Platform Terms and Developer Policies.
+
+## Shared-post update verified in official documentation
+
+On 2026-09-14, the signed-in browser loaded Meta's [Instagram post shares transition notice](https://developers.facebook.com/documentation/instagram-platform/webhooks/new), updated 2025-10-30. It documents `ig_post` attachments with `payload.ig_post_media_id`, `payload.title` (caption), and `payload.url`. Its transition example contains both `share` and `ig_post` for the same post. The notice says legacy post `share` attachments were to be removed after 2026-02-01.
+
+The receiver now extracts bounded captions as source claims and deduplicates media candidates by post ID (or URL when no ID is available). It attempts `ig_post`, legacy `share`, image and video URLs only under the existing explicit hostname allow-list, public-network checks, no-redirect rule and MIME/size limits. Storage uses the returned media MIME type; FFmpeg validates content before analysis. A URL is a retrieval candidate, not proof of playable video. HTML/permalink responses do not become watched content. Caption-only results remain METADATA_ONLY.
+
+The official example includes a signed lookaside.fbsbx.com media URL. This documents a delivery format; it does not verify availability for arbitrary Reels or establish a fixed expiry. No hostname has been enabled in the deployed worker because a worker and live DM payload are still missing. The new tests use fake values in the documented shape; they are not live account tests.
 
 ## Official sources actually inspected
 
@@ -8,7 +16,7 @@ Meta's [official Instagram API collection](https://www.postman.com/meta/instagra
 
 The collection states that shared media/post notifications include the share URL. This does **not** establish a downloadable video file, an expiry duration, access to arbitrary third-party Reels, or entitlement to bypass platform access controls. Group messaging is not supported in that documented flow. A message recipient must have initiated contact. Testers need the appropriate app/account roles and granted permissions.
 
-The [Instagram Platform messaging page](https://developers.facebook.com/docs/instagram-platform/instagram-api-with-instagram-login/messaging-api) and [message webhook reference](https://developers.facebook.com/docs/instagram-platform/webhooks/reference/messages) failed to load in the documentation tool. Therefore current webhook subtype payloads, exact subscriptions, access-review entitlements, reply-window rules and temporary URL lifetime remain **unconfirmed**, rather than inferred from third-party examples. The official collection's example uses the Instagram Login Send API host `graph.instagram.com`; the separate Facebook Login path uses a different setup/token model. Do not mix them.
+The [Instagram Platform messaging page](https://developers.facebook.com/docs/instagram-platform/instagram-api-with-instagram-login/messaging-api) and [message webhook reference](https://developers.facebook.com/docs/instagram-platform/webhooks/reference/messages) failed to load in the documentation tool. Therefore other webhook subtype payloads, exact subscriptions, access-review entitlements, reply-window rules and temporary URL lifetime remain **unconfirmed**, rather than inferred from third-party examples. The official collection's example uses the Instagram Login Send API host `graph.instagram.com`; the separate Facebook Login path uses a different setup/token model. Do not mix them.
 
 ## Support and verification matrix
 
@@ -17,14 +25,14 @@ The [Instagram Platform messaging page](https://developers.facebook.com/docs/ins
 | Account | Professional business/creator account documented in Meta's collection | @kdn_brain Professional account verified in Instagram settings on 2026-09-14 |
 | Login/permissions | Instagram Login path and business basic/manage-messages scopes documented; app has no OAuth onboarding UI | Manual setup required |
 | Text DM | Defensive `entry[].messaging[].message.text`/`mid` normalisation; synthetic fixture | Live payload unverified |
-| Shared Reel/post | Share URL may be present; unknown fields preserved; never treated as playable video automatically | Exact subtype/field shape unverified |
+| Shared Reel/post | Share URL may be present; unknown fields preserved; never treated as playable video automatically | ig_post post-share shape documented; actual Reel payload and retrieval unverified |
 | Direct image/video | Parser preserves attachment type, payload and URL; worker attempts only `image`/`video` with a URL and an explicitly approved hostname | Live direct-media payload unverified |
 | Subscriptions | Configure signed webhook endpoint, then consult the actual Meta dashboard/reference for message subscriptions and account subscription | Subscription/review unverified |
 | App Review | Tester-role requirements documented; production access and review must be established for the chosen app/account configuration | No App Review completed |
 | Media expiry | No fixed lifetime is assumed; retrieval is attempted during worker acquisition | Timing/URL lifetime unverified; queue delay can lose an expiring URL |
 | Automated replies | Initial user contact prerequisite documented; current reply window not established here | Replies disabled; no notification executor |
 
-All `tests/fixtures/instagram-*.json` payloads are **simulated examples**, not captured proof of Meta's exact Reel attachment schema. Tests validate parser behaviour, signature handling and durable transaction semantics, not account integration.
+Legacy `tests/fixtures/instagram-*.json` payloads are **simulated examples**, not captured proof of Meta's exact Reel attachment schema. Tests validate parser behaviour, signature handling and durable transaction semantics, not account integration.
 
 ## Implemented ingestion and fallback
 
@@ -35,7 +43,7 @@ All `tests/fixtures/instagram-*.json` payloads are **simulated examples**, not c
 - Event/message IDs deduplicate retries. New message IDs produce distinct captures.
 - Unknown fields and multiple attachments are preserved. No scraper, invented Graph lookup or browser-session reuse exists.
 - Direct media fetching uses configured exact `META_MEDIA_HOSTS`, public IPv4 DNS validation, address pinning, no redirects, a timeout, byte/MIME limits and private storage. A failed or expired URL falls back to missing content.
-- A shared/unknown attachment does not become video merely because it contains a URL.
+- A share/ig_post is a bounded retrieval candidate, not evidence of video analysis. Unknown attachments are preserved without retrieval.
 - The authenticated item page can attach up to three videos/images or supplied text/transcripts. Resume uses the original capture ID, a submission ID and revision; existing private outputs of the same action type update in place.
 - Separate follow-up DMs are preserved independently, not silently assigned to an older capture. Dashboard assignment/content entry is the current safe alternative.
 

@@ -51,6 +51,13 @@ export async function fetchMedia(
   maxBytes: number,
   allowedHosts: string[],
 ): Promise<Buffer> {
+  return (await fetchMediaAsset(input, maxBytes, allowedHosts)).buffer;
+}
+export async function fetchMediaAsset(
+  input: string,
+  maxBytes: number,
+  allowedHosts: string[],
+): Promise<{ buffer: Buffer; contentType: string }> {
   const url = await assertSafePublicUrl(input);
   if (!allowedHosts.includes(url.hostname))
     throw new Error("Media host has not been approved in META_MEDIA_HOSTS");
@@ -86,7 +93,12 @@ export async function fetchMedia(
             request.destroy(new Error("Media exceeds size limit"));
           else chunks.push(chunk);
         });
-        response.on("end", () => resolve(Buffer.concat(chunks)));
+        response.on("end", () =>
+          resolve({
+            buffer: Buffer.concat(chunks),
+            contentType: String(response.headers["content-type"]).split(";")[0],
+          }),
+        );
         response.on("error", reject);
       },
     );

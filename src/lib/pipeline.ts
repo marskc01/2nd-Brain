@@ -14,7 +14,8 @@ import {
   embed,
 } from "./intelligence";
 import { sampleMedia } from "./media";
-import { fetchMedia } from "./security";
+import { fetchMediaAsset } from "./security";
+import { instagramContent, type InstagramAttachment } from "./instagram";
 import { routeIntent } from "./workflow";
 import { evaluateAction } from "./policy";
 import type { Coverage, ActionProposal } from "./domain";
@@ -33,7 +34,7 @@ type Capture = {
   source_url: string | null;
   source_kind: string;
   project_id: string | null;
-  input_data: { text?: string; attachments?: { type: string; url?: string }[] };
+  input_data: { text?: string; attachments?: InstagramAttachment[] };
 };
 export class Blocked extends Error {}
 export function emptyCoverage(note?: string | null): Coverage {
@@ -142,15 +143,19 @@ export async function processCapture(job: Job, worker: string) {
         .order("created_at"),
     ) || [];
   const acquisitionNotes: string[] = [];
-  // Direct media only. A share/reel attachment URL is never assumed to be a video.
+  const shared = instagramContent(
+    capture.source_kind === "instagram_dm"
+      ? capture.input_data.attachments || []
+      : [],
+  );
+  // Fetch only from explicitly configured hosts; HTML, redirects and unsafe
+  // destinations are rejected. FFmpeg validates bytes before analysis.
   if (!assets.length && capture.source_kind === "instagram_dm") {
     const attachments = capture.input_data.attachments || [];
-    for (const [index, attachment] of attachments.slice(0, 3).entries()) {
-      if (!["video", "image"].includes(attachment.type) || !attachment.url)
-        continue;
+    for (const { index, attachment } of shared.candidates) {
       try {
         const acquired = await stage(`acquire_${index}`, async () => {
-          const buffer = await fetchMedia(
+          const { buffer, contentType } = await fetchMediaAsset(
             attachment.url!,
             limits.bytes,
             (process.env.META_MEDIA_HOSTS || "").split(",").filter(Boolean),
@@ -160,8 +165,7 @@ export async function processCapture(job: Job, worker: string) {
             .from("kdn-media")
             .upload(path, buffer, {
               upsert: true,
-              contentType:
-                attachment.type === "video" ? "video/mp4" : "image/jpeg",
+              contentType,
             });
           if (error) throw new Error("Private media upload failed");
           return checked(
@@ -175,6 +179,7 @@ export async function processCapture(job: Job, worker: string) {
                 provenance: {
                   provider: "instagram",
                   attachmentIndex: index,
+                  attachmentType: attachment.type,
                   retrievedAt: new Date().toISOString(),
                 },
               })
@@ -185,16 +190,21 @@ export async function processCapture(job: Job, worker: string) {
         assets.push(acquired);
       } catch {
         acquisitionNotes.push(
-          "A direct media attachment could not be retrieved. It may be expired, redirected, or from a host not yet approved. Upload content to resume.",
+          "An Instagram media attachment could not be retrieved. It may be expired, redirected, or from a host not yet approved. Upload content to resume.",
         );
       }
     }
-    if (attachments.some((a) => !["video", "image"].includes(a.type)))
+    if (
+      attachments.some(
+        (a) => !["video", "image", "share", "ig_post"].includes(a.type),
+      )
+    )
       acquisitionNotes.push(
-        "Shared or unknown attachments were preserved but have not been treated as playable media.",
+        "Unknown attachments were preserved but have not been treated as playable media.",
       );
   }
   const coverage = emptyCoverage(note);
+  if (shared.captions.length) coverage.caption = "available";
   const evidence: Evidence[] = directText
     ? [
         {
@@ -205,7 +215,15 @@ export async function processCapture(job: Job, worker: string) {
         },
       ]
     : [];
-  if (!assets.length && !directText) {
+  evidence.push(
+    ...shared.captions.map((text): Evidence => ({
+      kind: "source_claim",
+      text: `Instagram caption: ${text}`,
+      sourceId: capture.id,
+      atMs: null,
+    })),
+  );
+  if (!assets.length && !evidence.length) {
     const save = routeIntent(note) === "save_reference";
     const url =
       capture.source_url ||

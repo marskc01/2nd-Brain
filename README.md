@@ -2,7 +2,7 @@
 
 An owner-only application that turns captured source text and accessible media into useful private outputs. Version 0.2 continues the original foundation with an implemented manual workflow, provider adapters, transactional worker, authenticated dashboard and usage guide.
 
-**Status:** local application and automated tests pass. No cloud deployment, live Supabase connection, actual OpenAI perception, or live Instagram DM/reply was verified. The original full specification is not yet complete. No existing remote database was modified.
+**Live status (14 September 2026):** [KDN Brain](https://2nd-brain-phi.vercel.app/) has owner-only Supabase access and an online Railway worker. A real Instagram share was automatically captured. An owned sample video completed actual transcription, sampled visual analysis and a visible script/action. The tested Instagram Reel supplied only a permalink and remains Needs content; arbitrary Reel video access is not verified. Automatic DMs and external actions are off. See the verification guide for exact limits and remaining scope.
 
 ## Start here
 
@@ -18,7 +18,7 @@ npm run dev
 
 Open `http://localhost:3000`, then **Open demo**. Demo data is labelled, local to the browser and removable. AI, media uploads and Instagram do not run in demo mode.
 
-For the real service, configure `.env.local` from `.env.example`, inspect the intended Supabase project `dgbrxgkktdqjymjmnrzr`, apply migrations 001 (if not already applied) and 002 in order, create the sole auth user, set OWNER_USER_ID, and run:
+**The current Supabase project already has migrations 001–003 and its owner. Do not rerun or reset it.** For a fresh installation, configure `.env.local` from `.env.example`, inspect the intended Supabase project `dgbrxgkktdqjymjmnrzr`, apply migrations 001 (if not already applied) , 002 and 003 in order, create the sole auth user, set OWNER_USER_ID, and run:
 
 ```sh
 npm run setup:owner

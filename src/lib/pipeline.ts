@@ -257,7 +257,7 @@ export async function processCapture(job: Job, worker: string) {
   if (needsProvider) {
     if (!process.env.OPENAI_API_KEY)
       throw new Blocked(
-        "OpenAI API key is missing. Add it to the web and worker environment, restart the worker, then Retry this item.",
+        "OpenAI API key is missing. Add it to the worker environment, restart the worker, then Retry this item.",
       );
     const budget = checked(
       await db.rpc("reserve_budget", {

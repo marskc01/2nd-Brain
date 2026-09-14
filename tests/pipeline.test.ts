@@ -212,6 +212,35 @@ describe("vertical slice with simulated AI and real media/database", () => {
         .rows,
     ).toHaveLength(0);
   });
+  it("saves an Instagram caption as source evidence without claiming video analysis", async () => {
+    const id = await newCapture("", "/save");
+    await sql.query(
+      "update captures set source_kind='instagram_dm', input_data=$2 where id=$1",
+      [
+        id,
+        JSON.stringify({
+          attachments: [
+            { type: "ig_post", payload: { title: "A caption-only reference" } },
+          ],
+        }),
+      ],
+    );
+    const calls = mock.analyseMedia.mock.calls.length;
+    await processCapture(await job(), "pipeline-test");
+    const result = await sql.query<{
+      content_state: string;
+      coverage: { caption: string; video: string };
+    }>("select content_state,coverage from captures where id=$1", [id]);
+    expect(result.rows[0].content_state).toBe("METADATA_ONLY");
+    expect(result.rows[0].coverage.caption).toBe("available");
+    expect(result.rows[0].coverage.video).toBe("unavailable");
+    expect(mock.analyseMedia.mock.calls.length).toBe(calls);
+    const output = await sql.query<{ content: string }>(
+      "select content from artifacts where capture_id=$1",
+      [id],
+    );
+    expect(output.rows[0].content).toContain("A caption-only reference");
+  });
   it("retry reuses completed media/understanding checkpoints, without duplicate artifacts", async () => {
     const id = await newCapture("A practical source text.", "/script");
     mock.createArtifact.mockRejectedValueOnce(

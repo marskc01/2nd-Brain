@@ -1,5 +1,37 @@
 import { normalizedMessageSchema, type NormalizedMessage } from "./domain";
 type RecordValue = Record<string, unknown>;
+export type InstagramAttachment = NormalizedMessage["attachments"][number];
+
+// Meta's post-share transition payload can contain both share and ig_post
+// for the same media. These are retrieval candidates, not proof of access.
+export function instagramContent(attachments: InstagramAttachment[]) {
+  const candidates: { attachment: InstagramAttachment; index: number }[] = [];
+  const captions: string[] = [];
+  const seen = new Set<string>();
+  for (const [index, attachment] of attachments.entries()) {
+    if (!["video", "image", "share", "ig_post"].includes(attachment.type))
+      continue;
+    const payload = record(attachment.payload);
+    if (
+      ["share", "ig_post"].includes(attachment.type) &&
+      typeof payload.title === "string" &&
+      payload.title.trim()
+    ) {
+      const caption = payload.title.slice(0, 20000);
+      if (!captions.includes(caption) && captions.length < 3)
+        captions.push(caption);
+    }
+    if (!attachment.url) continue;
+    const key =
+      typeof payload.ig_post_media_id === "string"
+        ? `post:${payload.ig_post_media_id}`
+        : attachment.url;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    if (candidates.length < 3) candidates.push({ attachment, index });
+  }
+  return { candidates, captions };
+}
 function record(value: unknown): RecordValue {
   return value && typeof value === "object" && !Array.isArray(value)
     ? (value as RecordValue)

@@ -7,13 +7,14 @@ import {
   useState,
   type FormEvent,
 } from "react";
+import { AstraHandoff } from "@/components/astra-handoff";
 import { browserDb } from "@/lib/browser-db";
 
 type Capture = {
   id: string;
   title: string;
   source_url: string | null;
-  input_data?: { attachments?: { url?: string }[] };
+  input_data?: { text?: string; attachments?: { url?: string }[] };
   source_kind: string;
   owner_note: string | null;
   state: string;
@@ -1052,6 +1053,18 @@ export default function Brain() {
               {!data.artifacts.some(
                 (a) => a.capture_id === selectedItem.id,
               ) && <p className="muted">No artifact has been created yet.</p>}
+              <AstraHandoff
+                key={selectedItem.id}
+                capture={selectedItem}
+                artifacts={data.artifacts}
+                actions={data.actions}
+                demo={demo}
+                context={{
+                  notes: data.profile.context.notes,
+                  goals: data.goals,
+                  projects: data.projects,
+                }}
+              />
               <h3>Add content to this capture</h3>
               <p className="muted">
                 Use this form for missing media or a transcript. It resumes this

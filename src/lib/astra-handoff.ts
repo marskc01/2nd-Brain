@@ -74,6 +74,11 @@ function sourceUrl(capture: HandoffCapture) {
     return null;
   }
 }
+function contextRecord(item?: ContextItem) {
+  if (!item) return null;
+  const { id, title, description, status } = item;
+  return { id, title, description, status };
+}
 export function buildAstraHandoff(input: HandoffInput): string {
   const c = input.capture;
   const evidence = c.understanding?.evidence || [];
@@ -100,15 +105,27 @@ export function buildAstraHandoff(input: HandoffInput): string {
     },
     ownerInstruction: c.owner_note,
     sourceText: c.input_data?.text || null,
-    priorUnderstanding: c.understanding,
-    existingOutputs: input.artifacts.filter((a) => a.capture_id === c.id),
-    executionRecords: input.actions.filter((a) => a.capture_id === c.id),
+    priorUnderstanding: c.understanding && {
+      summary: c.understanding.summary,
+      reason: c.understanding.reason,
+      inferredIntent: c.understanding.inferredIntent,
+      evidence: evidence.map(({ kind, text, sourceId, atMs }) => ({ kind, text, sourceId, atMs })),
+      uncertainties: c.understanding.uncertainties,
+      research: c.understanding.research && {
+        text: c.understanding.research.text,
+        sources: c.understanding.research.sources.map(({ url, title }) => ({ url, title })),
+      },
+    },
+    existingOutputs: input.artifacts.filter((a) => a.capture_id === c.id)
+      .map(({ id, capture_id, title, kind, content }) => ({ id, capture_id, title, kind, content })),
+    executionRecords: input.actions.filter((a) => a.capture_id === c.id)
+      .map(({ id, capture_id, type, intended_result, status }) => ({ id, capture_id, type, intended_result, status })),
     ownerContext: input.context
       ? {
           notes: input.context.notes || null,
-          activeGoals: input.context.goals.filter((g) => g.status === "active"),
+          activeGoals: input.context.goals.filter((g) => g.status === "active").map(contextRecord),
           linkedProject:
-            input.context.projects.find((p) => p.id === c.project_id) || null,
+            contextRecord(input.context.projects.find((p) => p.id === c.project_id)),
         }
       : "Not included by owner.",
   };

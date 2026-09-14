@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { owner, checked, failure, json, HttpError } from "@/lib/server/auth";
+import { readView } from "@/lib/server/read-view";
 import { limits } from "@/lib/config";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -64,42 +65,6 @@ const commands = z.discriminatedUnion("command", [
 export async function GET(request: Request) {
   try {
     const { db, id } = await owner(request);
-    const results = await Promise.all([
-      db
-        .from("captures")
-        .select("*")
-        .eq("owner_id", id)
-        .order("updated_at", { ascending: false })
-        .limit(200),
-      db
-        .from("actions")
-        .select("*")
-        .eq("owner_id", id)
-        .order("created_at", { ascending: false })
-        .limit(200),
-      db
-        .from("artifacts")
-        .select("*")
-        .eq("owner_id", id)
-        .order("created_at", { ascending: false })
-        .limit(200),
-      db.from("goals").select("*").eq("owner_id", id),
-      db.from("projects").select("*").eq("owner_id", id),
-      db.from("owner_profiles").select("*").eq("id", id).maybeSingle(),
-      db
-        .from("worker_heartbeats")
-        .select("last_seen")
-        .order("last_seen", { ascending: false })
-        .limit(1),
-      db
-        .from("budget_reservations")
-        .select("amount_usd,created_at,usage_note")
-        .eq("owner_id", id)
-        .gte(
-          "created_at",
-          new Date().toISOString().slice(0, 10) + "T00:00:00Z",
-        ),
-    ]);
     const [
       captures,
       actions,
@@ -109,7 +74,68 @@ export async function GET(request: Request) {
       profile,
       heartbeat,
       budget,
-    ] = results.map(checked);
+    ] = await Promise.all([
+      readView("captures", (signal) =>
+        db
+          .from("captures")
+          .select("*")
+          .eq("owner_id", id)
+          .order("updated_at", { ascending: false })
+          .limit(200)
+          .abortSignal(signal),
+      ),
+      readView("actions", (signal) =>
+        db
+          .from("actions")
+          .select("*")
+          .eq("owner_id", id)
+          .order("created_at", { ascending: false })
+          .limit(200)
+          .abortSignal(signal),
+      ),
+      readView("artifacts", (signal) =>
+        db
+          .from("artifacts")
+          .select("*")
+          .eq("owner_id", id)
+          .order("created_at", { ascending: false })
+          .limit(200)
+          .abortSignal(signal),
+      ),
+      readView("goals", (signal) =>
+        db.from("goals").select("*").eq("owner_id", id).abortSignal(signal),
+      ),
+      readView("projects", (signal) =>
+        db.from("projects").select("*").eq("owner_id", id).abortSignal(signal),
+      ),
+      readView("profile", (signal) =>
+        db
+          .from("owner_profiles")
+          .select("*")
+          .eq("id", id)
+          .abortSignal(signal)
+          .maybeSingle(),
+      ),
+      readView("heartbeat", (signal) =>
+        db
+          .from("worker_heartbeats")
+          .select("last_seen")
+          .order("last_seen", { ascending: false })
+          .limit(1)
+          .abortSignal(signal),
+      ),
+      readView("budget", (signal) =>
+        db
+          .from("budget_reservations")
+          .select("amount_usd,created_at,usage_note")
+          .eq("owner_id", id)
+          .gte(
+            "created_at",
+            new Date().toISOString().slice(0, 10) + "T00:00:00Z",
+          )
+          .abortSignal(signal),
+      ),
+    ]);
     if (!profile)
       throw new HttpError(
         503,
@@ -126,9 +152,11 @@ export async function GET(request: Request) {
         heartbeat,
         budget,
         configuration: {
-          openai: process.env.OPENAI_API_KEY
-            ? "configured_unverified"
-            : "missing",
+          openai: captures?.some(
+            (capture) => capture.content_state === "MEDIA_ANALYSED",
+          )
+            ? "media_processing_observed"
+            : "check_worker_configuration",
           instagram:
             process.env.META_APP_SECRET && process.env.OWNER_INSTAGRAM_ID
               ? "configured_unverified"

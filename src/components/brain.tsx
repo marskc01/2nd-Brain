@@ -3,6 +3,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type FormEvent,
 } from "react";
@@ -231,6 +232,7 @@ export default function Brain() {
     [selected, setSelected] = useState<string | null>(null),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
+    [loadError, setLoadError] = useState(""),
     [notice, setNotice] = useState(""),
     [ready, setReady] = useState(false),
     [filter, setFilter] = useState(""),
@@ -253,6 +255,7 @@ export default function Brain() {
           ...(body ? { "Content-Type": "application/json" } : {}),
         },
         body: body ? JSON.stringify(body) : undefined,
+        signal: body ? undefined : AbortSignal.timeout(35000),
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Request failed");
@@ -260,11 +263,23 @@ export default function Brain() {
     },
     [token],
   );
+  const refreshing = useRef(false);
   const refresh = useCallback(async () => {
-    if (token && !demo) {
-      const value = await api();
-      setData(value);
-      setVerified(true);
+    if (token && !demo && !refreshing.current) {
+      refreshing.current = true;
+      try {
+        const value = await api();
+        setData(value);
+        setVerified(true);
+        setLoadError("");
+      } catch (e) {
+        setLoadError(
+          e instanceof Error ? e.message : "Unable to load your saved data.",
+        );
+        throw e;
+      } finally {
+        refreshing.current = false;
+      }
     }
   }, [token, demo, api]);
   useEffect(() => {
@@ -304,7 +319,7 @@ export default function Brain() {
   }, [data, demo]);
   useEffect(() => {
     if (!token || demo) return;
-    void refresh().catch((e) => setError(e.message));
+    void refresh().catch(() => {});
     const interval = setInterval(() => {
       void refresh().catch(() => {});
     }, 7000);
@@ -599,6 +614,20 @@ export default function Brain() {
                 configured.
               </p>
             )}
+            {!demo && !verified && !loadError && (
+              <p role="status">Loading your saved items…</p>
+            )}
+            {loadError && (
+              <div role="alert" className="error">
+                {loadError}{" "}
+                <button
+                  className="secondary"
+                  onClick={() => void refresh().catch(() => {})}
+                >
+                  Retry loading
+                </button>
+              </div>
+            )}
             {error && (
               <p role="alert" className="error">
                 {error}
@@ -671,9 +700,11 @@ export default function Brain() {
             />
             {demo
               ? "Demo workspace"
-              : workerLive
-                ? "Worker active"
-                : "Worker not detected"}
+              : !verified
+                ? "Checking worker…"
+                : workerLive
+                  ? "Worker active"
+                  : "Worker not detected"}
           </p>
           <small>Single owner · private outputs</small>
           <button
@@ -743,6 +774,20 @@ export default function Brain() {
           </div>
           <button onClick={() => go("capture")}>＋ Quick capture</button>
         </header>
+        {!demo && !verified && !loadError && (
+          <p role="status">Loading your saved items…</p>
+        )}
+        {loadError && (
+          <div role="alert" className="error">
+            {loadError}{" "}
+            <button
+              className="secondary"
+              onClick={() => void refresh().catch(() => {})}
+            >
+              Retry loading
+            </button>
+          </div>
+        )}
         {error && (
           <div role="alert" className="error">
             {error}
